@@ -2,9 +2,8 @@ import os
 import time
 from playwright.sync_api import sync_playwright
 
-
 def test_addition_e2e():
-    """Test basic addition through the UI"""
+    """Test basic addition and memory through the UI"""
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
@@ -16,7 +15,7 @@ def test_addition_e2e():
             page.fill("#b", "5")
             page.click("button:has-text('Add (+)')")
 
-            page.wait_for_selector('text=10.00')
+            page.wait_for_selector('.success')
             result = page.inner_text("#result-text")
             assert "10" in result
 
@@ -32,8 +31,6 @@ def test_addition_e2e():
             text = page.inner_text("#result-text")
             assert "999" in text
 
-        except Exception as e:
-            print(f"Test failed or server not running: {e}")
         finally:
             browser.close()
 
@@ -50,17 +47,15 @@ def test_subtraction_e2e():
             page.fill("#b", "3")
             page.click("button:has-text('Subtract (-)')")
 
-            page.wait_for_selector('text=7')
+            page.wait_for_selector('.success')
             result = page.inner_text("#result-text")
             assert "7" in result
-        except Exception as e:
-            print(f"Test failed or server not running: {e}")
         finally:
             browser.close()
 
 
 def test_divide_by_zero_e2e():
-    """Test that dividing by zero shows an error"""
+    """Test that dividing by zero shows an error in status/display"""
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
@@ -74,14 +69,12 @@ def test_divide_by_zero_e2e():
             page.wait_for_selector('.error')
             result = page.inner_text("#result-text")
             assert "Error" in result or "zero" in result.lower()
-        except Exception as e:
-            print(f"Test failed or server not running: {e}")
         finally:
             browser.close()
 
 
 def test_history_e2e():
-    """Test viewing and clearing history through the UI"""
+    """Test viewing and clearing history in the side drawer"""
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
@@ -95,17 +88,15 @@ def test_history_e2e():
             page.wait_for_selector('.success')
 
             # View History
-            page.click("button:has-text('View History')")
+            page.click("button:has-text('Reload')")
             time.sleep(1)
-            result = page.inner_text("#result-text")
-            assert "History" in result or "8" in result
+            history_text = page.inner_text("#history-container")
+            assert "16" in history_text or "8" in history_text
 
-            # Clear History
-            page.click("button:has-text('Clear History')")
+            # Clear Server History
+            page.click("button:has-text('Clear')")
             time.sleep(1)
-            result = page.inner_text("#result-text")
-            assert "clear" in result.lower() or "No calculations" in result
-        except Exception as e:
-            print(f"Test failed or server not running: {e}")
+            history_text = page.inner_text("#history-container")
+            assert "History empty." in history_text or "No calculations yet." in history_text
         finally:
             browser.close()
