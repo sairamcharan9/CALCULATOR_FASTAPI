@@ -27,7 +27,7 @@ class SingleInput(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 async def read_item(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="index.html", context={"request": request})
 
 def execute_math(op_name: str, a: str, b: str):
     logger.info(f"API Executing {op_name} {a} {b}")
