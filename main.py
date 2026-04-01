@@ -33,9 +33,15 @@ def execute_math(op_name: str, a: str, b: str):
     logger.info(f"API Executing {op_name} {a} {b}")
     # Process through the CLI repl logic directly to trigger history and observers
     res = calculator.process_input(f"calc {op_name} {a} {b}")
-    # return the exact string to the frontend
+    
     if "Error" in res:
         return {"error": res}
+        
+    # Extract only the final result for the Web UI (since REPL usually returns "Result: A + B = C")
+    if "=" in res:
+        final_val = res.split("=")[-1].strip()
+        return {"result": final_val}
+        
     return {"result": res}
 
 @app.post("/add")
@@ -88,9 +94,15 @@ def api_memory_store(inp: SingleInput):
     return {"result": res}
 
 @app.get("/memory/recall")
-def api_memory_recall():
-    logger.info("API Memory Recall")
-    res = calculator.process_input("memory recall mem")
+def api_mem_recall():
+    logger.info("API Executing memory recall")
+    res = calculator.process_input("memory recall")
+    if "not found" in res.lower() or "Error" in res:
+        return {"error": res}
+    # Extract numerical value format: "Memory 'default': 999" -> "999"
+    if ":" in res:
+        final_val = res.split(":")[-1].strip()
+        return {"result": final_val}
     return {"result": res}
 
 @app.post("/memory/clear")
