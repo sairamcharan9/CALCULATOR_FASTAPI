@@ -96,10 +96,10 @@ def api_memory_store(inp: SingleInput):
 @app.get("/memory/recall")
 def api_mem_recall():
     logger.info("API Executing memory recall")
-    res = calculator.process_input("memory recall")
+    res = calculator.process_input("memory recall mem")
     if "not found" in res.lower() or "Error" in res:
         return {"error": res}
-    # Extract numerical value format: "Memory 'default': 999" -> "999"
+    # Extract numerical value format: "Memory 'mem': 999" -> "999"
     if ":" in res:
         final_val = res.split(":")[-1].strip()
         return {"result": final_val}
